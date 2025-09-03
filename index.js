@@ -511,7 +511,7 @@ GhoStyMainManagerClient.on('messageCreate', async (message) => {
             const actionRow = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setLabel('Documentation')
-                    .setURL('https://github.com/WannaBeGhoSt/GhoSty-OwO-Multi-Manager/README.md')
+                    .setURL('https://github.com/WannaBeGhoSt/GhoSty-OwO-Multi-Manager/blob/main/README.md')
                     .setStyle(ButtonStyle.Link),
                 new ButtonBuilder()
                     .setLabel('Support Server')
@@ -643,5 +643,6 @@ process.on('SIGINT', async () => {
     
     process.exit(0);
 });
+
 
 start().catch(console.error);
