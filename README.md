@@ -8,7 +8,7 @@ A sophisticated Node.js-based Discord bot system that manages multiple tokens fo
 
 ## 🚀 Features  
 
-- 💰 **Multi-Token Management** - Control multiple Discord accounts from a single interface
+- 💰 **Multi-Token Management** - Control multiple OwO Workers from a single interface
 - 📊 **Balance Tracking System** - Comprehensive user balance management
 - 🔄 **Real-time Stock Monitoring** - Check available cowoncy across all tokens
 - 🔒 **Secure Transaction System** - Owner-protected commands and balance verification
@@ -84,3 +84,4 @@ Contributions, issue reports, and feature suggestions are welcome! Feel free to 
 - **⚠️ Use this project responsibly. The author is not responsible for any misuse or violations of Discord's Terms of Service.**
 
 > **Note:** This system is designed for educational purposes only. Please comply with Discord's Terms of Service when using any automation tools.
+
