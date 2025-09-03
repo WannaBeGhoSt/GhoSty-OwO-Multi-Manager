@@ -4,7 +4,7 @@
 
 **This Script Is For Educational Purposes Only. The Author Is _NOT_ Responsible For Any Loss And Is _NOT_ Promoting Any Illegal Automation.**  
 
-A sophisticated Node.js-based Discord bot system that manages multiple tokens for OWO cash transactions with comprehensive balance tracking.
+A sophisticated Node.js-based Discord bot system that manages Workers for OWO cash transactions with comprehensive balance tracking.
 
 ## 🚀 Features  
 
@@ -84,4 +84,5 @@ Contributions, issue reports, and feature suggestions are welcome! Feel free to 
 - **⚠️ Use this project responsibly. The author is not responsible for any misuse or violations of Discord's Terms of Service.**
 
 > **Note:** This system is designed for educational purposes only. Please comply with Discord's Terms of Service when using any automation tools.
+
 
