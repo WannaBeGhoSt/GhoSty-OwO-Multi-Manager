@@ -306,10 +306,19 @@ function GhoStyCreatePageButtons(page, totalPages) {
     
     return row;
 }
-
 GhoStyMainManagerClient.on('ready', () => {
     console.log(`Main manager bot ${GhoStyMainManagerClient.user.tag} is ready`);
+    GhoStyMainManagerClient.user.setPresence({
+        activities: [
+            {
+                name: "GhoSty Multi Worker Manager | @ghostyjija",
+                type: 2
+            }
+        ],
+        status: "idle"
+    });
 });
+
 
 GhoStyMainManagerClient.on('messageCreate', async (message) => {
     if (message.author.bot) return;
@@ -350,43 +359,101 @@ GhoStyMainManagerClient.on('messageCreate', async (message) => {
             message.reply(`Added ${amount} balance to ${targetUser.tag}. New balance: ${balances[userId].balance}`);
         }
         else if (command === 'stock') {
-            const GhoStyLoadinStockEmb = new EmbedBuilder()
+            const loadingEmbed = new EmbedBuilder()
                 .setTitle('OWO Cash Stock')
                 .setDescription('Fetching Cash Stock. Please wait for a moment...')
                 .setColor(0xFFFF00)
                 .setFooter({ text: "Made with ❤️ and 🧠 by GhoSty [Async Development]" });
-                
-            const GhoStyLoadingMsgStockEdit = await message.reply({ embeds: [GhoStyLoadinStockEmb] });
-            
+
+            const msg = await message.reply({ embeds: [loadingEmbed] });
+
             const stock = await GhoStyUpdStock();
-            
+
             if (Object.keys(stock).length === 0) {
                 const errorEmbed = new EmbedBuilder()
                     .setTitle('OWO Cash Stock')
                     .setDescription('No stock data available. Please wait for the next update.')
                     .setColor(0xFF0000);
-                    
-                return GhoStyLoadingMsgStockEdit.edit({ embeds: [errorEmbed] });
+
+                return msg.edit({ embeds: [errorEmbed] });
             }
-            const embed = new EmbedBuilder()
-                .setTitle('OWO Cash Stock')
-                .setColor(0x00FF00);
-            
-            let totalCash = 0;
-            let tokenNumber = 1;
-            
-            for (const [userId, data] of Object.entries(stock)) {
-                embed.addFields({ 
-                    name: `Token ${tokenNumber} - ${data.GhoStysUsername}`, 
-                    value: `💵 ${data.cash.toLocaleString()}`,
-                    inline: true 
+
+            const stockEntries = Object.entries(stock);
+            const itemsPerPage = 5;
+            let currentPage = 0;
+            const totalPages = Math.ceil(stockEntries.length / itemsPerPage);
+
+            const totalCash = stockEntries.reduce((acc, [, data]) => acc + data.cash, 0);
+
+            const generateEmbed = (page) => {
+                const start = page * itemsPerPage;
+                const end = start + itemsPerPage;
+                const entries = stockEntries.slice(start, end);
+
+                const embed = new EmbedBuilder()
+                    .setTitle('OWO Cash Stock')
+                    .setColor(0x00FF00);
+
+                entries.forEach(([userId, data], index) => {
+                    embed.addFields({
+                        name: `Token ${start + index + 1} - ${data.GhoStysUsername}`,
+                        value: `💵 ${data.cash.toLocaleString()}`,
+                        inline: true
+                    });
                 });
-                totalCash += data.cash;
-                tokenNumber++;
-            }
-            
-            embed.setFooter({ text: `Total Cash: 💵 ${totalCash.toLocaleString()}` });
-            await GhoStyLoadingMsgStockEdit.edit({ embeds: [embed] });
+
+                embed.setFooter({
+                    text: `Page ${page + 1}/${totalPages} | Total Cash (All Tokens): 💵 ${totalCash.toLocaleString()}`
+                });
+
+                return embed;
+            };
+
+            const getRow = (page) => {
+                return new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('prev')
+                        .setLabel('◀️')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(page === 0),
+                    new ButtonBuilder()
+                        .setCustomId('next')
+                        .setLabel('▶️')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(page === totalPages - 1)
+                );
+            };
+
+            await msg.edit({
+                embeds: [generateEmbed(currentPage)],
+                components: [getRow(currentPage)]
+            });
+
+            const collector = msg.createMessageComponentCollector({
+                componentType: ComponentType.Button,
+                time: 60_000
+            });
+
+            collector.on('collect', async (interaction) => {
+                if (interaction.user.id !== message.author.id) {
+                    return interaction.reply({ content: "You Can't Interact | Made By @ghostyjija", ephemeral: true });
+                }
+
+                if (interaction.customId === 'prev' && currentPage > 0) {
+                    currentPage--;
+                } else if (interaction.customId === 'next' && currentPage < totalPages - 1) {
+                    currentPage++;
+                }
+
+                await interaction.update({
+                    embeds: [generateEmbed(currentPage)],
+                    components: [getRow(currentPage)]
+                });
+            });
+
+            collector.on('end', async () => {
+                await msg.edit({ components: [] }); 
+            });
         }
         else if (command === 'sendcash') {
             if (args.length < 3) {
@@ -511,7 +578,7 @@ GhoStyMainManagerClient.on('messageCreate', async (message) => {
             const actionRow = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setLabel('Documentation')
-                    .setURL('https://github.com/WannaBeGhoSt/GhoSty-OwO-Multi-Manager/blob/main/README.md')
+                    .setURL('https://github.com/WannaBeGhoSt/GhoSty-OwO-Multi-Manager/README.md')
                     .setStyle(ButtonStyle.Link),
                 new ButtonBuilder()
                     .setLabel('Support Server')
@@ -643,6 +710,5 @@ process.on('SIGINT', async () => {
     
     process.exit(0);
 });
-
 
 start().catch(console.error);
