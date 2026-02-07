@@ -1,20 +1,52 @@
+/*
+This code is only made for educational and practice purposes. 
+Author and Async Development are not responsible for misuse.
+
+GhoSty OwO Multi Manager V2
+Stable Alpha Build Version: 070226.2.0.0
+
+GitHub: https://github.com/WannaBeGhoSt
+Discord: https://discord.gg/SyMJymrV8x
+*/
+
 const { Client, GatewayIntentBits, Partials, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const { Client: SelfbotClient } = require('discord.js-selfbot-v13');
 const fs = require('fs').promises;
 
 const GhoStyMainConfig = {
-    mainToken: 'Main Manager Bot Token Here', // main manager bot token
-    cashChannelId: 'Commands Channel Id Here For Worker Tokens', // token commands channel id
-    ownerId: 'Owner Access Discord Account Id', // owner access id 
+    mainToken: 'Add your manager bot token', // main manager bot token
+    cashChannelId: '', // Leave blank to use command channel dynamically, or set a specific channel ID
+    ownerId: 'Add owner controller id', // owner access id 
     owoBotId: '408785106942164992' // Do not change this
 };
-
-console.log("> GhoSty OwO Multi Manager\n> Made with ❤️  and 🧠 by GhoSty [Async Development]")
+console.log(`    
+           ▒▒                    ▒▒          
+        ▒▒▒▒▒▒▒   ▒▒▒     ▒▒▒▒ ▒▒▒▒▒▒▒▒        
+      ▒▒▒▒████▒▒ ▒▒█▒▒  ▒▒▒█▒▒▒▒░█████▒     ░░██░░░░░░░░░██░░░░░█████░░░     
+     ▒▒▒▒██░░██▒▒▒██▒▒ ▒▒░██▒░▒██░░░░█▒    ░░░████░░░░░░████░░░░██░░░██░░
+     ▒▒██░░░░██▒▒██▒▒▒ ▒░██▒▒██░░░░░░█▒    ░░░█████░░███████░░░░░░░░░░█░░░  
+    ▒▒██░░█░░█▒▒▒█▒▒▒▒▒▒░█▒▒▒█░░░█░░██▒     ░░█░░░████░░░███░░░░░░░░░░█░░░
+    ▒▒█░░░░░░█▒▒█░░██░▒░█▒▒ ▒█░░░░░█▒▒▒    ░░██░░░░██░░░░███░░░░░░░░░░█░░░    
+    ▒▒█░░░░██▒▒▒████████▒▒  ▒██░░███▒▒     ░░█░░░░░░░░░░░███░░░░░░░░░░█░░░
+     ▒██████▒▒▒███▒▒▒██▒▒   ▒▒████▒▒▒      ░██░░░      ░░██░░░░░░░░░░█░░░░      
+    ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ░██░░░       ░░██░░░░░░░████░░░░       
+     ▒▒▒▒▒    ▒▒▒▒▒▒▒▒▒      ▒▒▒▒▒        ░█░░░        ░░██░░░░████████████░░░   
+               ▒▒   ▒▒        ▒▒          ░░░░         ░░█░░░░░░░░░░░░░░░░░░░░
+                                                        ░░░
+                                                 Async Development Stable Build Version: 070226.2.0.0`)
+console.log("\n> GhoSty OwO Multi Manager V2\n> Made with ❤️  and 🧠 by GhoSty [Async Development]\n> Updated - 07 February 2026 [Join Async Development For Further Updates]")
 
 const GhoStyTokensTxt = 'tokens.txt';
 const GhoStyStockDB = 'stock.json';
 const GhoStyBalanceDB = 'balances.json';
 const GhostyPaginatorItems = 10;
+
+function GhoStyGetEffectiveChannelId(commandChannelId) {
+    if (!GhoStyMainConfig.cashChannelId || GhoStyMainConfig.cashChannelId.trim() === '') {
+        return commandChannelId;
+    }
+    return GhoStyMainConfig.cashChannelId;
+}
 
 async function GhoStyinitFiles() {
     try {
@@ -95,12 +127,13 @@ async function GhoStySaveStockAvail(stock) {
     }
 }
 
-async function GhoStyUpdStock() {
+async function GhoStyUpdStock(commandChannelId) {
     const stock = {};
+    const effectiveChannelId = GhoStyGetEffectiveChannelId(commandChannelId);
     
     for (const GhoStySelfTokenWorker of GhoStySelfClients) {
         try {
-            const channel = await GhoStySelfTokenWorker.channels.fetch(GhoStyMainConfig.cashChannelId);
+            const channel = await GhoStySelfTokenWorker.channels.fetch(effectiveChannelId);
             if (!channel) {
                 console.log(`Channel not found for GhoStySelfTokenWorker ${GhoStySelfTokenWorker.user.tag}`);
                 continue;
@@ -188,8 +221,9 @@ async function GhoStyinitSelfWorkers() {
     }
 }
 
-async function GhoStySendCashFromWorker(tokenIndex, amount, recipient) {
+async function GhoStySendCashFromWorker(tokenIndex, amount, recipient, commandChannelId) {
     const stock = await GhoStyLoadStockAvail();
+    const effectiveChannelId = GhoStyGetEffectiveChannelId(commandChannelId);
     
     if (tokenIndex < 1 || tokenIndex > GhoStySelfClients.length) {
         throw new Error('Invalid token number');
@@ -203,7 +237,7 @@ async function GhoStySendCashFromWorker(tokenIndex, amount, recipient) {
     }
     
     try {
-        const channel = await GhoStySelfTokenWorker.channels.fetch(GhoStyMainConfig.cashChannelId);
+        const channel = await GhoStySelfTokenWorker.channels.fetch(effectiveChannelId);
         if (!channel) {
             throw new Error('Cash channel not found');
         }
@@ -266,7 +300,7 @@ function GhoStyCreateBalEmbed(balances, page = 1) {
     const users = Object.entries(balances).slice(startIdx, endIdx);
     users.forEach(([userId, userData], index) => {
         embed.addFields({
-            name: `${startIdx + index + 1}. ${userData.GhoStysUsername}`,
+            name: `${startIdx + index + 1}. ${userData.username}`,
             value: `💵 ${userData.balance.toLocaleString()}`,
             inline: true
         });
@@ -367,7 +401,7 @@ GhoStyMainManagerClient.on('messageCreate', async (message) => {
 
             const msg = await message.reply({ embeds: [loadingEmbed] });
 
-            const stock = await GhoStyUpdStock();
+            const stock = await GhoStyUpdStock(message.channel.id);
 
             if (Object.keys(stock).length === 0) {
                 const errorEmbed = new EmbedBuilder()
@@ -456,22 +490,39 @@ GhoStyMainManagerClient.on('messageCreate', async (message) => {
             });
         }
         else if (command === 'sendcash') {
-            if (args.length < 3) {
-                return message.reply('Usage: !sendcash {token number} @user {amount}');
+            if (args.length < 2) {
+                return message.reply('Usage: !sendcash [token number] @user {amount}\nExample: !sendcash @user 5000 OR !sendcash 3 @user 5000');
             }
-            const tokenNumber = parseInt(args[0]);
-            const targetUser = message.mentions.users.first();
-            const amount = parseInt(args[args.length - 1]);
             
-            if (isNaN(tokenNumber) || tokenNumber < 1 || tokenNumber > GhoStySelfClients.length) {
-                return message.reply(`Invalid token number. Please use a number between 1 and ${GhoStySelfClients.length}.`);
+            const firstArgIsNumber = !isNaN(parseInt(args[0])) && !args[0].startsWith('<@');
+            
+            let tokenNumber = null;
+            let targetUser = null;
+            let amount = 0;
+            
+            if (firstArgIsNumber) {
+                if (args.length < 3) {
+                    return message.reply('Usage: !sendcash {token number} @user {amount}');
+                }
+                tokenNumber = parseInt(args[0]);
+                targetUser = message.mentions.users.first();
+                amount = parseInt(args[args.length - 1]);
+                
+                if (isNaN(tokenNumber) || tokenNumber < 1 || tokenNumber > GhoStySelfClients.length) {
+                    return message.reply(`Invalid token number. Please use a number between 1 and ${GhoStySelfClients.length}.`);
+                }
+            } else {
+                targetUser = message.mentions.users.first();
+                amount = parseInt(args[args.length - 1]);
             }
+            
             if (!targetUser) {
                 return message.reply('Please mention a user to send cash to.');
             }
             if (isNaN(amount) || amount <= 0) {
                 return message.reply('Please provide a valid amount to send.');
             }
+            
             const balances = await GhoStyLoadBalance();
             const userId = message.author.id;
             
@@ -480,26 +531,87 @@ GhoStyMainManagerClient.on('messageCreate', async (message) => {
             }
             
             try {
-                const sendingEmbed = new EmbedBuilder()
-                    .setTitle('Sending OWO Cash')
-                    .setDescription(`Sending 💵 ${amount} to ${targetUser.tag} using token ${tokenNumber}...`)
-                    .setColor(0xFFFF00)
-                    .setFooter({ text: "Made with ❤️ and 🧠 by GhoSty [Async Development]" });
-                
-                const sendingMessage = await message.reply({ embeds: [sendingEmbed] });
-                
-                await GhoStySendCashFromWorker(tokenNumber, amount, targetUser.id);
+                if (tokenNumber !== null) {
+                    const sendingEmbed = new EmbedBuilder()
+                        .setTitle('Sending OWO Cash')
+                        .setDescription(`Sending 💵 ${amount} to ${targetUser.tag} using token ${tokenNumber}...`)
+                        .setColor(0xFFFF00)
+                        .setFooter({ text: "Made with ❤️ and 🧠 by GhoSty [Async Development]" });
+                    
+                    const sendingMessage = await message.reply({ embeds: [sendingEmbed] });
+                    
+                    await GhoStySendCashFromWorker(tokenNumber, amount, targetUser.id, message.channel.id);
 
-                balances[userId].balance -= amount;
-                await GhoStySaveBalance(balances);
-                
-                const GhoStySentSuccessEmb = new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription(`✅ Successfully sent 💵 ${amount} to ${targetUser.tag}!`)
-                    .setColor(0x00FF00)
-                    .setFooter({ text: "Made with ❤️ and 🧠 by GhoSty [Async Development]" });
+                    balances[userId].balance -= amount;
+                    await GhoStySaveBalance(balances);
+                    
+                    const GhoStySentSuccessEmb = new EmbedBuilder()
+                        .setTitle('Success!')
+                        .setDescription(`✅ Successfully sent 💵 ${amount} to ${targetUser.tag}!`)
+                        .setColor(0x00FF00)
+                        .setFooter({ text: "Made with ❤️ and 🧠 by GhoSty [Async Development]" });
 
-                await sendingMessage.edit({ embeds: [GhoStySentSuccessEmb] });
+                    await sendingMessage.edit({ embeds: [GhoStySentSuccessEmb] });
+                } else {
+                    const totalTokens = GhoStySelfClients.length;
+                    const amountPerToken = Math.floor(amount / totalTokens);
+                    const remainder = amount % totalTokens;
+                    
+                    if (amountPerToken === 0) {
+                        return message.reply(`Amount too small to divide among ${totalTokens} tokens. Minimum amount needed: ${totalTokens}`);
+                    }
+                    
+                    const sendingEmbed = new EmbedBuilder()
+                        .setTitle('Sending OWO Cash (Multi-Token)')
+                        .setDescription(`Sending 💵 ${amount} to ${targetUser.tag} divided across ${totalTokens} tokens...\nPer token: 💵 ${amountPerToken}${remainder > 0 ? ` (+${remainder} from first tokens)` : ''}`)
+                        .setColor(0xFFFF00)
+                        .setFooter({ text: "Made with ❤️ and 🧠 by GhoSty [Async Development]" });
+                    
+                    const sendingMessage = await message.reply({ embeds: [sendingEmbed] });
+                    
+                    let totalSent = 0;
+                    let successCount = 0;
+                    const failedTokens = [];
+                    
+                    for (let i = 0; i < totalTokens; i++) {
+                        const currentTokenNumber = i + 1;
+                        let amountToSend = amountPerToken;
+
+                        if (i < remainder) {
+                            amountToSend += 1;
+                        }
+                        
+                        try {
+                            await GhoStySendCashFromWorker(currentTokenNumber, amountToSend, targetUser.id, message.channel.id);
+                            totalSent += amountToSend;
+                            successCount++;
+
+                            if (i < totalTokens - 1) {
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                            }
+                        } catch (error) {
+                            console.error(`Failed to send from token ${currentTokenNumber}:`, error);
+                            failedTokens.push(currentTokenNumber);
+                        }
+                    }
+                    
+                    if (totalSent > 0) {
+                        balances[userId].balance -= totalSent;
+                        await GhoStySaveBalance(balances);
+                    }
+                    
+                    const resultDescription = failedTokens.length > 0
+                        ? `⚠️ Partially sent 💵 ${totalSent} to ${targetUser.tag}!\nSuccessful: ${successCount}/${totalTokens} tokens\nFailed tokens: ${failedTokens.join(', ')}`
+                        : `✅ Successfully sent 💵 ${totalSent} to ${targetUser.tag} from ${successCount} tokens!`;
+                    
+                    const GhoStySentSuccessEmb = new EmbedBuilder()
+                        .setTitle(failedTokens.length > 0 ? 'Partial Success' : 'Success!')
+                        .setDescription(resultDescription)
+                        .setColor(failedTokens.length > 0 ? 0xFFA500 : 0x00FF00)
+                        .setFooter({ text: "Made with ❤️ and 🧠 by GhoSty [Async Development]" });
+
+                    await sendingMessage.edit({ embeds: [GhoStySentSuccessEmb] });
+                }
             } catch (error) {
                 message.reply(`Failed to send cash: ${error.message}`);
             }
@@ -530,7 +642,7 @@ GhoStyMainManagerClient.on('messageCreate', async (message) => {
                     },
                     {
                         name: '💸 Transaction Commands',
-                        value: '```diff\n+ !sendcash {token} @user {amount}\n- Send cowoncy from specified token\n- Requires sufficient balance\n\n+ !addbalance @user {amount}\n- [OWNER ONLY] Add balance to user\n\n+ !removebalance @user {amount}\n- [OWNER ONLY] Remove balance from user\n```',
+                        value: '```diff\n+ !sendcash @user {amount}\n- Send cowoncy divided across ALL tokens\n- Auto-divides amount in integers\n\n+ !sendcash {token} @user {amount}\n- Send cowoncy from specified token\n- Requires sufficient balance\n\n+ !addbalance @user {amount}\n- [OWNER ONLY] Add balance to user\n\n+ !removebalance @user {amount}\n- [OWNER ONLY] Remove balance from user\n```',
                         inline: false
                     },
                     {
@@ -559,7 +671,7 @@ GhoStyMainManagerClient.on('messageCreate', async (message) => {
                 .addFields(
                     {
                         name: 'Sending Cowoncy',
-                        value: '```!sendcash 3 @GhoSty 50000\n(Sends 50k from 3rd token to GhoSty)```',
+                        value: '```!sendcash @GhoSty 50000\n(Divides 50k across all tokens)\n\n!sendcash 3 @GhoSty 50000\n(Sends 50k from 3rd token only)```',
                         inline: true
                     },
                     {
@@ -588,7 +700,7 @@ GhoStyMainManagerClient.on('messageCreate', async (message) => {
 
             try {
                 await message.author.send({ embeds: [helpEmbed, commandGuide], components: [actionRow] });
-                if (message.channel.id !== GhoStyMainConfig.cashChannelId) {
+                if (message.channel.id !== GhoStyMainConfig.cashChannelId && GhoStyMainConfig.cashChannelId !== '') {
                     await message.reply('📬 Help menu sent to your DMs! (Check spam folder if not received)');
                 }
             } catch (error) {
