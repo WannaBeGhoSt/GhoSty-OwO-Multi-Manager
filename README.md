@@ -1,4 +1,4 @@
-# GhoSty OwO Multi Manager
+# GhoSty OwO Multi Manager V2
 
 ## ⚠️ Disclaimer  
 
@@ -49,7 +49,7 @@ node index.js
 |---------|-------------|-------------|
 | `!balance` | Check your current cowoncy balance | All Users |
 | `!stock` | Check current cowoncy stock across all tokens | All Users |
-| `!sendcash {token} @user {amount}` | Send cowoncy from specified token | All Users |
+| `!sendcash {token - optional} @user {amount}` | Send cowoncy from specified/divided token | All Users |
 | `!addbalance @user {amount}` | Add balance to user | Owner Only |
 | `!removebalance @user {amount}` | Remove balance from user | Owner Only |
 | `!listbalance` | View all user balances (paginated) | Owner Only |
