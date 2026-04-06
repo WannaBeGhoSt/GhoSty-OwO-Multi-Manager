@@ -1,6 +1,6 @@
 # GhoSty OwO Multi Manager V2
 
-## ⚠️ Disclaimer  
+## ⚠️ Disclaimer   
 
 **This Script Is For Educational Purposes Only. The Author Is _NOT_ Responsible For Any Loss And Is _NOT_ Promoting Any Illegal Automation.**  
 
